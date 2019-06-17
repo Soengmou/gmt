@@ -8,6 +8,8 @@ cat > cmake/ConfigUser.cmake << 'EOF'
 set (CMAKE_INSTALL_PREFIX "$ENV{INSTALLDIR}")
 set (DCW_ROOT "$ENV{COASTLINEDIR}")
 set (GSHHG_ROOT "$ENV{COASTLINEDIR}")
+set (GMT_USE_THREADS TRUE)
+set (GMT_USE_OPENMP TRUE)
 set (CMAKE_C_FLAGS "-Wall -Wdeclaration-after-statement ${CMAKE_C_FLAGS}")
 EOF
 
