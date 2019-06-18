@@ -6479,7 +6479,7 @@ bool gmt_getpen (struct GMT_CTRL *GMT, char *buffer, struct GMT_PEN *P) {
 	 */
 
 	if ((c = strchr (line, '+')) && strchr ("cosv", c[1])) {	/* Found valid modifiers */
-		char mods[GMT_LEN256] = {""}, v_args[2][GMT_LEN256] = {"",""}, p[GMT_LEN64] = {""}, T[2][GMT_LEN64], *t = NULL, *t2 = NULL;
+		char mods[GMT_LEN256] = {""}, v_args[2][GMT_LEN256] = {"",""}, p[GMT_LEN64] = {""}, T[2][GMT_LEN64] = {"",""}, *t = NULL, *t2 = NULL;
 		unsigned int pos = 0;
 		int n;
 		bool processed_vector = false, use[2] = {false, false}, may_differ = false;
@@ -10548,6 +10548,18 @@ unsigned int gmt_inonout (struct GMT_CTRL *GMT, double x, double y, struct GMT_D
 		side_h = GMT_OUTSIDE;	/* We are outside a hole until we are found to be inside it */
 		SHnext = gmt_get_DS_hidden (H);
 		while (side_h == GMT_OUTSIDE && H && SHnext->ogr && SHnext->ogr->pol_mode == GMT_IS_HOLE) {	/* Found a hole */
+			/* Must check if point is inside this hole polygon */
+			side_h = support_inonout_sub (GMT, x, y, H);
+			H = SHnext->next;	/* Move to next polygon hole */
+			if (H) SHnext = gmt_get_DS_hidden (H);
+		}
+		if (side_h == GMT_INSIDE) side = GMT_OUTSIDE;	/* Inside one of the holes, hence outside polygon; go to next perimeter polygon */
+		if (side_h == GMT_ONEDGE) side = GMT_ONEDGE;	/* On path of one of the holes, hence on polygon path; update side */
+	}
+	else if ((H = SH->next)) {	/* Must also check non ogr polygones for holes */
+		side_h = GMT_OUTSIDE;	/* We are outside a hole until we are found to be inside it */
+		SHnext = gmt_get_DS_hidden (H);
+		while (side_h == GMT_OUTSIDE && H && SHnext->pol_mode == GMT_IS_HOLE) {	/* Found a hole */
 			/* Must check if point is inside this hole polygon */
 			side_h = support_inonout_sub (GMT, x, y, H);
 			H = SHnext->next;	/* Move to next polygon hole */
